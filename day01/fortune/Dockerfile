@@ -14,6 +14,7 @@ COPY public public
 COPY views views
 
 # Reinstall the dependencies
+# /app/node_modules
 RUN npm install
 # We have installed the dependencies
 
@@ -25,6 +26,9 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 
 # What ports the container need to open
 EXPOSE ${APP_PORT} 
+
+# defining a mount point
+VOLUME /app/node_modules
 
 # Specify the shell to run this
 SHELL [ "/bin/sh", "-c" ]

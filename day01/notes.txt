@@ -1,0 +1,16 @@
+# create the volume
+docker volume create data-vol
+
+# create the MySQL container
+docker run -d -p 3306:3306 \
+  -e MYSQL_ROOT_PASSWORD=abc123 \
+  --mount type=volume,src=data-vol,dst=/var/lib/mysql \
+  mysql:8
+
+docker run -d -p 9000:3000 \
+  --network mynet \
+  --name myapp \
+  chukmunnlee/day01-fortune:1.1.0-beta01
+
+# spin up nicolaka/netshoot in mynet 
+docker run -ti --rm --network mynet nicolaka/netshoot /bin/bash
