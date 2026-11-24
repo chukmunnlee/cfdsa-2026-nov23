@@ -1,0 +1,48 @@
+--- 
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: bggapp-deploy 
+  namespace: bggns 
+spec:
+  replicas: 3
+  selector:
+    matchLabels: 
+      &pod-labels
+      app: bggapp 
+      env: workshop
+  template:
+    metadata:
+      labels:
+        <<: *pod-labels
+    spec: 
+      containers:
+      - name: bggapp-container 
+        image: stackupiss/bgg-backend:v1 
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: bgg-cm
+        - secretRef:
+            name: bgg-secret
+        ports:
+        - name: bggapp-port 
+          containerPort: 3000
+        resources: {}
+
+--- 
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: bggapp-svc 
+  namespace: bggns 
+spec:
+  type: LoadBalancer
+  #type: NodePort
+  #type: ClusterIP
+  selector:
+    app: bggapp 
+    env: workshop
+  ports: 
+  - port: 80 
+    targetPort: bggapp-port

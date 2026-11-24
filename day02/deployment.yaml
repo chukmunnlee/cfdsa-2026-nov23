@@ -51,3 +51,19 @@ spec:
         #     fieldRef:
         #       fieldPath: metadata.labels['dept']
         resources: {}
+
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: podinfo-svc 
+  namespace: myns
+spec:
+  type: ClusterIP
+  # we forward traffic to these pods
+  selector: 
+    dept: eng
+    env: dev
+  ports:
+  - port: 8080
+    targetPort: podinfo-port
