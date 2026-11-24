@@ -1,0 +1,19 @@
+---
+apiVersion: v1 
+kind: ConfigMap
+metadata:
+  name: podinfo-cm
+  namespace: myns
+data:
+  PODINFO_UI_COLOR: "#00FF9C"
+
+---
+apiVersion: v1 
+kind: Secret
+metadata:
+  name: podinfo-secret
+  namespace: myns
+data:
+  # value must be base64 encoded
+  PODINFO_UI_MESSAGE: dGhpcyBpcyBhbiBlbmNvZGVkIHN0cmluZw==
+
