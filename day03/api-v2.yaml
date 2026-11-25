@@ -1,0 +1,54 @@
+--- 
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: api2-deploy
+  namespace: day03
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+    #type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 20%
+    #   maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: api
+      env: dev
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: api
+        env: dev
+        version: v2
+    spec:
+      containers:
+      - name: api-container 
+        image: chukmunnlee/fake-api:v2-aug2026
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http-port
+          containerPort: 3000 
+        - name: metric-port
+          containerPort: 9464
+        resources: {}
+
+--- 
+apiVersion: v1 
+kind: Service
+metadata:
+  name: api2-svc
+  namespace: day03
+spec:
+  type: ClusterIP
+  #type: NodePort
+  #type: LoadBalancer
+  selector:
+    app: api
+    env: dev
+    version: v2
+  ports:
+  - port: 3000
+    targetPort: http-port
