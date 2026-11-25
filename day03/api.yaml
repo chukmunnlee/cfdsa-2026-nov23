@@ -68,6 +68,7 @@ metadata:
 spec:
   hostnames:
   - api.172.25.39.200.nip.io
+  #- acme.com
   parentRefs:
   - name: default-gtw 
     namespace: default

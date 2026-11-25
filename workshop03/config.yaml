@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workshop03
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: umami-cm
+  namespace: workshop03
+data:
+    POSTGRES_USER: umami
+    POSTGRES_DB: umami
+    PGDATA: /var/lib/postgresql/data/pgdata
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: umami-secret
+  namespace: workshop03
+data:
+  # mydbpassword
+  POSTGRES_PASSWORD: bXlkYnBhc3N3b3Jk
+  # openssl rand -hex 32 => 20d733d53240e3bbf674a18bc134141a3d10ce3acf9f829fc7a7121a5a36db95
+  APP_SECRET: MjBkNzMzZDUzMjQwZTNiYmY2NzRhMThiYzEzNDE0MWEzZDEwY2UzYWNmOWY4MjlmYzdhNzEyMWE1YTM2ZGI5NQo=

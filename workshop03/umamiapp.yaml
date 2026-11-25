@@ -1,0 +1,109 @@
+--- 
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: umamiapp-deploy 
+  namespace: workshop03
+spec: 
+  replicas: 1
+  selector:
+    matchLabels: 
+      app: umami 
+      tier: app 
+      env: workshop
+  template:
+    metadata:
+      labels:
+        app: umami 
+        tier: app 
+        env: workshop
+    spec:
+      containers:
+      - name: umamiapp-container 
+        image: ghcr.io/umami-software/umami:latest 
+        imagePullPolicy: IfNotPresent
+        envFrom: 
+        - configMapRef:
+            name: umami-cm
+        - secretRef:
+            name: umami-secret
+        env:
+        - name: DATABASE_URL 
+          value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@umamidb-svc.workshop03.svc.cluster.local:5432/$(POSTGRES_DB)
+        ports: 
+        - containerPort: 3000
+        resources: 
+          # lower bound
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          # upper bound /hard limit
+          limits:
+            cpu: 100m
+            memory: 256Mi
+
+---
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: umamiapp-svc 
+  namespace: workshop03
+spec: 
+  type: ClusterIP 
+  selector:
+    app: umami 
+    tier: app 
+    env: workshop
+  ports: 
+  - port: 3000
+    targetPort: 3000
+
+---
+apiVersion: gateway.networking.k8s.io/v1 
+kind: HTTPRoute 
+metadata: 
+  name: umamiapp-httproute 
+  namespace: workshop03
+spec: 
+  hostnames:
+  - umami.137.184.251.119.nip.io
+  parentRefs: 
+  - name: default-gtw 
+    namespace: default 
+    port: 80
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix 
+        value: /
+    backendRefs: 
+    - name: umamiapp-svc 
+      namespace: workshop03
+      port: 3000
+
+--- 
+apiVersion: autoscaling/v2 
+kind: HorizontalPodAutoscaler
+metadata:
+  name: umamiapp-hpa
+  namespace: workshop03
+spec:
+  minReplicas: 1
+  maxReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: umamiapp-deploy
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80

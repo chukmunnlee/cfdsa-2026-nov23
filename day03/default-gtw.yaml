@@ -10,7 +10,6 @@ spec:
   - name: web 
     port: 80 
     protocol: HTTP 
-    #hostname: '*'
     hostname: '*.nip.io'
     allowedRoutes:
       namespaces:
