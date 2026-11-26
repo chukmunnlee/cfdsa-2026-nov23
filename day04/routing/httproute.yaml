@@ -6,7 +6,7 @@ metadata:
   namespace: day04
 spec:
   hostnames:
-  - api.172.25.39.200.nip.io
+  - api.172.25.39.201.nip.io
   parentRefs:
   - name: default-gtw 
     namespace: default

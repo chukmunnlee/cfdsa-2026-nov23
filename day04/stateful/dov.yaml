@@ -11,7 +11,7 @@ metadata:
   name: dov-deploy
   namespace: day04
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       &pod-labels
@@ -36,6 +36,7 @@ spec:
               fieldPath: status.podIP
         ports:
         - containerPort: 3000
+        resources: {}
 
 ---
 apiVersion: v1
@@ -50,3 +51,19 @@ spec:
   ports:
   - port: 80
     targetPort: 3000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dov-hsvc 
+  namespace: day04
+spec:
+  # do not give it an IP address
+  clusterIP: None
+  selector:
+    app: dov
+  ports:
+  - port: 80
+    targetPort: 3000
+

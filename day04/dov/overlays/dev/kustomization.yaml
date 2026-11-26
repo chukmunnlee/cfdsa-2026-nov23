@@ -1,0 +1,41 @@
+
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+- ../../base
+- httproute.yaml
+
+configurations:
+- transform.yaml 
+
+namespace: dev
+namePrefix: dev-
+labels:
+- pairs:
+   env: dev
+  # add the service, deployment selectors
+  includeSelectors: true
+  # add the pod template
+  includeTemplates: true
+
+replicas:
+- name: dov-deploy 
+  count: 1
+
+images:
+- name: chukmunnlee/dov-bear 
+  newTag: v2
+
+configMapGenerator:
+- name: dov-cm 
+  literals:
+  - INSTANCE_NAME='test environment'
+
+patches:
+- target:
+    group: apps 
+    version: v1 
+    kind: Deployment 
+    name: dov-deploy
+  path: patches.yaml

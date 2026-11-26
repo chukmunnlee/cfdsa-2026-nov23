@@ -1,0 +1,9 @@
+- op: "replace"
+  path: "/spec/template/spec/containers/0/resources"
+  value:
+    requests:
+      memory: 128Mi
+      cpu: 64m
+    limits:
+      memory: 128Mi
+      cpu: 64m
