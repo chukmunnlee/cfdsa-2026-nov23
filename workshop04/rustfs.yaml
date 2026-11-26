@@ -1,0 +1,165 @@
+--- 
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: rustfs-hsvc
+  namespace: workshop04
+spec:
+  clusterIP: None
+  selector: 
+    app: rustfs
+  publishNotReadyAddresses: true
+  ports:
+  - name: data-port 
+    port: 9000
+    targetPort: data-port
+  - name: console-port 
+    port: 9001
+    targetPort: console-port
+
+--- 
+apiVersion: apps/v1 
+kind: StatefulSet 
+metadata: 
+  name: rustfs-sts
+  namespace: workshop04
+spec:
+  serviceName: rustfs-hsvc
+  replicas: 3
+  # parallel startup
+  podManagementPolicy: Parallel
+  selector: 
+    matchLabels:
+      app: rustfs
+  volumeClaimTemplates:
+  - metadata: 
+      name: data-vol
+    spec:
+      storageClassName: standard
+      accessModes: [ ReadWriteOncePod ]
+      resources: 
+        requests:
+          storage: 1Gi
+  template:
+    metadata: 
+      labels:
+        app: rustfs
+    spec: 
+      securityContext:
+        fsGroup: 10001
+      containers:
+      - name: rustfs-container
+        image: rustfs/rustfs:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: rustfs-cm
+        - secretRef:
+            name: rustfs-secret
+        ports:
+        - name: data-port 
+          containerPort: 9000
+        - name: console-port 
+          containerPort: 9001
+        volumeMounts:
+        - name: data-vol 
+          mountPath: /data
+
+--- 
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: rustfs-svc
+  namespace: workshop04
+spec:
+  type: ClusterIP
+  selector: 
+    app: rustfs
+  publishNotReadyAddresses: true
+  ports:
+  - name: data-port 
+    port: 9000
+    targetPort: data-port
+  - name: console-port 
+    port: 9001
+    targetPort: console-port
+--- 
+apiVersion: gateway.networking.k8s.io/v1 
+kind: HTTPRoute 
+metadata: 
+  name: data-httproute
+  namespace: workshop04 
+spec:
+  hostnames:
+  - data.172.25.39.200.nip.io
+  - console.172.25.39.200.nip.io
+  parentRefs:
+  - name: default-gtw 
+    namespace: default 
+    port: 80
+  rules: 
+  - matches:
+    - path: 
+        type: PathPrefix 
+        value: /
+      headers:
+      - name: Host 
+        type: Exact 
+        value: data.172.25.39.200.nip.io
+    backendRefs: 
+    - name: rustfs-svc 
+      port: 9000
+  - matches:
+    - path: 
+        type: PathPrefix 
+        value: /
+      headers:
+      - name: Host 
+        type: Exact 
+        value: console.172.25.39.200.nip.io
+    backendRefs: 
+    - name: rustfs-svc 
+      port: 9001
+
+# --- 
+# apiVersion: gateway.networking.k8s.io/v1 
+# kind: HTTPRoute 
+# metadata: 
+#   name: data-httproute
+#   namespace: workshop04 
+# spec:
+#   hostnames:
+#   - data.172.25.39.200.nip.io
+#   parentRefs:
+#   - name: default-gtw 
+#     namespace: default 
+#     port: 80
+#   rules: 
+#   - matches:
+#     - path: 
+#         type: PathPrefix 
+#         value: /
+#     backendRefs: 
+#     - name: rustfs-svc 
+#       port: 9000
+# --- 
+# apiVersion: gateway.networking.k8s.io/v1 
+# kind: HTTPRoute 
+# metadata: 
+#   name: console-httproute
+#   namespace: workshop04 
+# spec:
+#   hostnames:
+#   - console.172.25.39.200.nip.io
+#   parentRefs:
+#   - name: default-gtw 
+#     namespace: default 
+#     port: 80
+#   rules: 
+#   - matches:
+#     - path: 
+#         type: PathPrefix 
+#         value: /
+#     backendRefs: 
+#     - name: rustfs-svc 
+#       port: 9001

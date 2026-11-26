@@ -1,0 +1,30 @@
+---
+apiVersion: v1 
+kind: Namespace
+metadata:
+  name: workshop04
+
+---
+apiVersion: v1 
+kind: ConfigMap 
+metadata: 
+  name: rustfs-cm 
+  namespace: workshop04
+data:
+  RUSTFS_ADDRESS: 0.0.0.0:9000 
+  RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+  RUSTFS_CONSOLE_ENABLE: "true" 
+  RUSTFS_ACCESS_KEY: admin 
+  # name my stateful set rustfs-sts => rustfs-sts-0, rustfs-sts-1, rustfs-sts-2
+  # name headless service rustfs-hsvc
+  RUSTFS_VOLUMES: "http://rustfs-sts-{0...2}.rustfs-hsvc.workshop04.svc.cluster.local:9000/data"
+
+---
+apiVersion: v1 
+kind: Secret 
+metadata: 
+  name: rustfs-secret 
+  namespace: workshop04
+data:
+  # adminadmin1234
+  RUSTFS_SECRET_KEY: YWRtaW5hZG1pbjEyMzQ=
